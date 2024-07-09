@@ -14,6 +14,4 @@ Odoo Configuration file     :   /home/username/Projects/Odoo/project_name/config
 ```bash
     Usage: odoo_start.py -v version -n project_name
 ```
-Currently, This program is not satisfied for all structures. Anyone can edit. The purpose of the program is that a project 
-may have different versions, for examples, version change from 13 to 17, etc. So the developer should restart the server resetting the server. 
-The program can reduce your time but your infrastructure should follow as shown at **Project Infrastructure**.
+This program isn't good enough for all structures right now. The program's goal is to allow projects to have many versions; for instance, a project may have a version shift from 13 to 17, etc. Thus, the server was reset and restarted by the developer. The program can reduce your time but your project structure should follow as shown at Project Infrastructure.
