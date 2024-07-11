@@ -37,12 +37,12 @@ def main():
         venv_path = os.path.join(VIRTUAL[0], f'{ENV_PREFIX[0] if ENV_PREFIX is not None else ''}{version}{ENV_POSTFIX[0] if ENV_POSTFIX is not None else ''}/bin/activate')
         odoo_bin = os.path.join(ODOO_ROOT_DIR, f'{ODOO_VERSION_PREFIX}{version}{ODOO_VERSION_POSTFIX if ENV_POSTFIX is not None else ''}/odoo-bin')
         project_dir = os.path.join(PROJECT[0], name)
-        config_path = f"{find_conf_file(project_dir, version)[0]}"
+        config_file = f"{find_conf_file(project_dir, version)[0]}"
 
     else:
         print(f"Unsupported version: {version} or Project: {name} are not found")
         sys.exit(1)
-    cmd = f"source {venv_path} && {odoo_bin} -c {config_path}"
+    cmd = f"source {venv_path} && {odoo_bin} -c {config_file}"
     subprocess.run(cmd, shell=True, check=True, executable=SHELL[0])
 
 
