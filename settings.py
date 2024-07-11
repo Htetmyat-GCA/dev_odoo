@@ -14,7 +14,7 @@ ENV_PREFIX = 'odoo',  # odoo -> odoo16, env_ -> env_16, env -> env16 version wil
 
 ENV_POSTFIX = None  # ENV_POSTFIX = env ->
 
-ODOO_ROOT_DIR = '/var/lib/odoo/'  # os.path.join(HOME[0], '.odoo'),
+ODOO_ROOT_DIR = os.path.join(HOME[0], '.odoo'),
 
 ODOO_VERSION_PREFIX = 'o'
 
