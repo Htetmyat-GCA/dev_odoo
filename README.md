@@ -11,8 +11,16 @@ ODOO DEFAUT ROOT            :   /home/username/.odoo/
 Projects DIR                :   /home/username/Projects/Odoo/{project_name}
 Python Environment Path     :   /home/username/pyenv/
 Odoo Configuration file     :   /home/username/Projects/Odoo/{project_name}/config/odoo{version}.conf
-```
 
+```
+***
+
+### Bash Shell (Linux)
 ```bash
-    Usage: dev_odoo.py -v version -p project_name
+    $ ./dev_odoo.py -v version -p project_name
+```
+***
+### Python Shell
+```bash
+    $ python3 dev_odoo.py -v version -p project_name
 ```
