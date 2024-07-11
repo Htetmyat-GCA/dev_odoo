@@ -4,17 +4,17 @@ USER = os.environ.get('USER'),
 
 HOME = os.environ.get('HOME'),
 
-PROJECT = os.path.join(os.environ.get('HOME'), 'Projects/Odoo/'),
+PROJECT_ROOT = os.path.join(os.environ.get('HOME'), 'Projects/Odoo/'),  # set your project root directory
 
-VIRTUAL = os.path.join(os.environ.get('HOME'), 'Env'),
+VIRTUAL = os.path.join(os.environ.get('HOME'), 'Env'),  # change your python environment root directory
 
 # 'pre_version_post'
 
-ENV_PREFIX = 'odoo',  # odoo -> odoo16, env_ -> env_16, env -> env16 version will be variable
+ENV_PREFIX = 'odoo',  # if ENV_PREFIX is not None: pre_version -> {pre}{version}
 
-ENV_POSTFIX = None  # ENV_POSTFIX = env ->
+ENV_POSTFIX = None  # if ENV_POSTFIX is not none: version_postfix -> {version}{post}
 
-ODOO_ROOT_DIR = os.path.join(HOME[0], '.odoo'),
+ODOO_ROOT_DIR = os.path.join(HOME[0], '.odoo'),  # change your odoo root directory
 
 ODOO_VERSION_PREFIX = 'o'
 
