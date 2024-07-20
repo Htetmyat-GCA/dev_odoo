@@ -36,9 +36,13 @@ def main():
     parser.add_argument('-v', '--version', type=int, choices=[13, 16, 17], default=13,
                         help='odoo version(default is 13)')
     parser.add_argument('-p', '--project', required=True, help='Odoo Project file name')
+    parser.add_argument('-u', '--upgrade', type=str, required=False, help='To upgrade modules')
+    parser.add_argument('-d', '--database', type=str, required=False, help='Select the database')
     args = parser.parse_args()
     version = args.version
     name = args.project
+    upgrade = args.upgrade
+    db = args.database
     venv = odoo_bin = config_file = None
     if version and name:
         if all(map(is_root, [ODOO_ROOT_DIR[0], PROJECT_ROOT[0], VIRTUAL[0]])):
@@ -60,11 +64,18 @@ def main():
         sys.exit(1)
     if venv and odoo_bin and config_file:
         cmd = f"source {venv} && {odoo_bin} -c {config_file}"
+        if upgrade:
+            cmd += f" -u {upgrade}"
+        if db:
+            cmd += f" -d {db}"
         try:
             subprocess.run(cmd, shell=True, check=True, executable=SHELL[0])
         except subprocess.CalledProcessError as e:
             print(f"Command failed: with exit status {e.returncode}: {e.cmd}")
             exit(e.returncode)
+        except KeyboardInterrupt:
+            print(f"Keyboard interrupt received, exiting...")
+            exit(0)
     else:
         exit(1)
 
