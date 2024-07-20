@@ -16,11 +16,11 @@ Odoo Configuration file     :   /home/username/Projects/Odoo/{project_name}/conf
 ***
 
 ### Bash Shell (Linux)
-```shell
-$./dev_odoo.py -v version -p project_name
+```bash
+    $ ./dev_odoo.py -v version -p project_name
 ```
 ***
-### Python Shell
-```shell
-$python3 dev_odoo.py -v version -p project_name
+### Python
+```bash
+    $ python3 dev_odoo.py -v version -p project_name
 ```
