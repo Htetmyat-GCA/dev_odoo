@@ -2,20 +2,18 @@
 ***
 ## Description
 
-This program is good enough to run the odoo server for all structures right now. The program's goal is to allow projects to have many versions; for instance, a project may have a version shift from 13 to 17, etc. Thus, the developer **finds** the project directory, **needs to activate** the python environment that is reliable for Odoo version, then **_resets and restarts_** the server. The program can reduce your time; just configure your customized settings in [```settings.py```](https://github.com/Htetmyat-GCA/dev_odoo/blob/master/settings.py)
+This program is good enough to run the odoo server for all structures right now. The program's goal is to allow projects to have many versions; for instance, a project may have a version shift from 13 to 17, etc. Thus, the developer **finds** the project directory, **needs to activate** the python environment that is reliable for Odoo version, then **_resets and restarts_** the server. The program can reduce your time; just configure your customized settings in [```settings.py```](settings.py)
 
 
-### My Odoo Project Infrastructure
+### Default Odoo Project Structure
 ```
 ODOO DEFAUT ROOT            :   /home/username/.odoo/
 Projects DIR                :   /home/username/Projects/Odoo/{project_name}
 Python Environment Path     :   /home/username/pyenv/env{version}
 Odoo Configuration file     :   /home/username/Projects/Odoo/{project_name}/config/odoo{version}.conf
-
-
 ```
 
-### Man Page for dev_odoo.py
+### Man page
 ```bash
 options:
   -h, --help            show this help message and exit
@@ -41,5 +39,6 @@ options:
 ***
 ### Python and Windows users
 ```bash
-    $ python3 run -v version -p project_name -d database -u upgrade_module -s 
+    $ python3 dev_odoo/run -v version -p project_name -d database -u upgrade_module -s 
+    $ python3 dev_odoo/run -v version -p project_name -u upgrade_module 
 ```
