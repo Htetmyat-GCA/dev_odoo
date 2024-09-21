@@ -5,9 +5,6 @@ import subprocess
 import sys
 # import argcomplete
 import re
-
-from attr.validators import optional
-
 from settings import *
 
 
@@ -22,11 +19,9 @@ def find_conf_file(path, version):
     else:
         raise ValueError(f'Odoo {version} conf file was not found in {path}')
 
-
 # Check the directory is present and can be accessed by current user.
 def is_root(path):
     return os.path.isdir(path) and os.access(path, os.R_OK)
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -81,7 +76,6 @@ def main():
             exit(0)
     else:
         exit(1)
-
 
 if __name__ == '__main__':
     main()
