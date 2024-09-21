@@ -14,7 +14,7 @@ ENV_PREFIX = 'odoo',  # if ENV_PREFIX is not None: pre_version -> {pre}{version}
 
 ENV_POSTFIX = None  # if ENV_POSTFIX is not none: version_postfix -> {version}{post}
 
-ODOO_ROOT_DIR = os.path.join(HOME[0], '.odoo'),  # change your odoo root directory
+ODOO_ROOT_DIR = '/var/lib/odoo/',  # change your odoo root directory
 
 ODOO_VERSION_PREFIX = 'o'
 
