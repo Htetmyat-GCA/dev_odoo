@@ -7,6 +7,22 @@ import sys
 import re
 from settings import *
 
+def available_versions():
+    versions = []
+    ava_on_machine = [v for v in os.listdir(ODOO_ROOT_DIR)]
+    for version in ava_on_machine:
+        if ODOO_VERSION_PREFIX is not None:
+            if ODOO_VERSION_POSTFIX is None or ODOO_VERSION_PREFIX == ODOO_VERSION_PREFIX:
+                if version.startswith(ODOO_VERSION_PREFIX):
+                    versions.append(int(version.replace(ODOO_VERSION_PREFIX, '')))
+            else:
+                if version.startswith(ODOO_VERSION_PREFIX):
+                    version = version.replace(ODOO_VERSION_PREFIX, '')
+                    versions.append(int(version.replace(ODOO_VERSION_POSTFIX, '')))
+    return versions
+
+def check_envpath():
+    ...
 
 def find_conf_file(path, version):
     match = []
@@ -25,12 +41,12 @@ def is_root(path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--version', type=int, choices=[13, 16, 17], default=17,
-                        help='odoo version(default is 17)')
-    parser.add_argument('-p', '--project', type=str, choices=[i for i in os.listdir(PROJECT_ROOT[0]) if '.' not in i],
-                        required=True, help='Odoo Project file name')
-    parser.add_argument('-u', '--upgrade', type=str, required=False, help='To upgrade modules')
-    parser.add_argument('-d', '--database', type=str, required=False, help='Select the database')
+    parser.add_argument('-v', '--version', type=int, choices=available_versions(), default=17,
+                        help='Odoo Version (default == 17)')
+    parser.add_argument('-p', '--project', type=str, choices=[i for i in os.listdir(PROJECT_ROOT) if '.' not in i],
+                        required=True, help='Odoo Project Directory Name')
+    parser.add_argument('-u', '--upgrade', type=str, required=False, help='To Upgrade Module')
+    parser.add_argument('-d', '--database', type=str, required=False, help='Select the Database')
     parser.add_argument('-s', '--shell', action='store_true', required=False, help='Odoo Shell')
     # argcomplete.autocomplete(parser)
     args = parser.parse_args()
@@ -41,13 +57,13 @@ def main():
     shell = 'shell' if args.shell else ''
     venv = odoo_bin = config_file = None
     if version and name:
-        if all(map(is_root, [ODOO_ROOT_DIR[0], PROJECT_ROOT[0], VIRTUAL[0]])):
-            venv = os.path.join(VIRTUAL[0],
-                                f'{ENV_PREFIX[0] if ENV_PREFIX is not None else ''}{version}{ENV_POSTFIX[0] if 
-                                ENV_POSTFIX is not None else ''}/bin/activate')
-            odoo_bin = os.path.join(ODOO_ROOT_DIR[0],
+        if all(map(is_root, [ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL])):
+            venv = os.path.join(VIRTUAL,
+                                f'{ENV_PREFIX if ENV_PREFIX is not None else ''}{version}{ENV_POSTFIX if ENV_POSTFIX is not None else ''}\
+                                /bin/activate')
+            odoo_bin = os.path.join(ODOO_ROOT_DIR,
                                     f'{ODOO_VERSION_PREFIX}{version}{ODOO_VERSION_POSTFIX if ENV_POSTFIX is not None else ''}/odoo-bin {shell}')
-            project_dir = os.path.join(PROJECT_ROOT[0], name)
+            project_dir = os.path.join(PROJECT_ROOT, name)
             config_file = f"{find_conf_file(project_dir, version)[0]}"
         else:
             p = ['ODOO_ROOT_DIR', 'PROJECT_ROOT', 'VIRTUAL']
@@ -58,6 +74,7 @@ def main():
     else:
         print(f"Unsupported version: {version} or Project: {name} are not found")
         sys.exit(1)
+
     if venv and odoo_bin and config_file:
         cmd = f"source {venv} && {odoo_bin} -c {config_file}"
         if upgrade:
@@ -67,7 +84,7 @@ def main():
         if shell and not db:
             raise ValueError("Database must be selected")
         try:
-            subprocess.run(cmd, shell=True, check=True, executable=SHELL[0])
+            subprocess.run(cmd, shell=True, check=True, executable=SHELL)
         except subprocess.CalledProcessError as e:
             print(f"Command failed: with exit status {e.returncode}: {e.cmd}")
             exit(e.returncode)

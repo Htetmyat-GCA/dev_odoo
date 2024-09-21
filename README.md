@@ -20,13 +20,13 @@ Odoo Configuration file     :   /home/username/Projects/Odoo/{project_name}/conf
 options:
   -h, --help            show this help message and exit
   -v {13,16,17}, --version {13,16,17}
-                        odoo version(default is 17)
-  -p {will,be,show,the,project_list,of,project,root}, --project {will,be,show,the,project_list,of,project,root}
-                        Odoo Project file name
+                        odoo version (default == 17)
+  -p {will,show,the,list,of,projects}, --project {will,show,the,list,of,projects}
+                        Odoo Project Directory Name
   -u UPGRADE, --upgrade UPGRADE
-                        To upgrade modules
+                        To Upgrade Module
   -d DATABASE, --database DATABASE
-                        Select the database
+                        Select the Database
   -s, --shell           Odoo Shell
 
 ```
