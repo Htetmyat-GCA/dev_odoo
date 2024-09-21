@@ -2,7 +2,7 @@
 ***
 ## Description
 
-This program is as good as enough to run the odoo server for all structures right now. The program's goal is to allow projects to have many versions; for instance, a project may have a version shift from 13 to 17, etc. Thus, the developer find the project directory, __need to activate the python environment__ that reliable for odoo version then reset and restart the server. The program can reduce your time just configure your customize setting in [```settings.py```](https://github.com/Htetmyat-GCA/dev_odoo/blob/master/settings.py)
+This program is good enough to run the odoo server for all structures right now. The program's goal is to allow projects to have many versions; for instance, a project may have a version shift from 13 to 17, etc. Thus, the developer **finds** the project directory, **needs to activate** the python environment that is reliable for Odoo version, then **_resets and restarts_** the server. The program can reduce your time; just configure your customized settings in [```settings.py```](https://github.com/Htetmyat-GCA/dev_odoo/blob/master/settings.py)
 
 
 ### My Odoo Project Infrastructure
