@@ -35,8 +35,8 @@ options:
 ### Bash Shell (Linux)
 ```bash
     $ chmod +x dev_odoo/run
-    $ /dev_odoo/run -p project_name -u upgrade_module # to run default odoo version
-    $ /dev_odoo/run -v version -p project_name -d database -u upgrade_module -s # odoo shell
+    $ dev_odoo/run -p project_name -u upgrade_module # to run default odoo version
+    $ dev_odoo/run -v version -p project_name -d database -u upgrade_module -s # odoo shell
 ```
 ***
 ### Python and Windows users
