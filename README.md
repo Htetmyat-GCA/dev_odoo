@@ -9,7 +9,7 @@ This program is as good as enough to run the odoo server for all structures righ
 ```
 ODOO DEFAUT ROOT            :   /home/username/.odoo/
 Projects DIR                :   /home/username/Projects/Odoo/{project_name}
-Python Environment Path     :   /home/username/pyenv/
+Python Environment Path     :   /home/username/pyenv/env{version}
 Odoo Configuration file     :   /home/username/Projects/Odoo/{project_name}/config/odoo{version}.conf
 
 
