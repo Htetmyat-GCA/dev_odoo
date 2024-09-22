@@ -11,14 +11,12 @@ def available_versions():
     versions = []
     ava_on_machine = [v for v in os.listdir(ODOO_ROOT_DIR)]
     for version in ava_on_machine:
-        if ODOO_VERSION_PREFIX is not None:
-            if ODOO_VERSION_POSTFIX is None or ODOO_VERSION_PREFIX == ODOO_VERSION_PREFIX:
-                if version.startswith(ODOO_VERSION_PREFIX):
-                    versions.append(int(version.replace(ODOO_VERSION_PREFIX, '')))
-            else:
-                if version.startswith(ODOO_VERSION_PREFIX):
-                    version = version.replace(ODOO_VERSION_PREFIX, '')
-                    versions.append(int(version.replace(ODOO_VERSION_POSTFIX, '')))
+        if ODOO_VERSION_PREFIX is not None and version.startswith(ODOO_VERSION_PREFIX):
+            version = version.replace(ODOO_VERSION_PREFIX, '')
+            if ODOO_VERSION_POSTFIX is not None and version.startswith(ODOO_VERSION_POSTFIX):
+                version = version.replace(ODOO_VERSION_POSTFIX, '')
+            versions.append(int(version))
+    versions.sort()
     return versions
 
 def check_envpath():
@@ -59,8 +57,7 @@ def main():
     if version and name:
         if all(map(is_root, [ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL])):
             venv = os.path.join(VIRTUAL,
-                                f'{ENV_PREFIX if ENV_PREFIX is not None else ''}{version}{ENV_POSTFIX if ENV_POSTFIX is not None else ''}\
-                                /bin/activate')
+                                f'{ENV_PREFIX if ENV_PREFIX is not None else ''}{version}{ENV_POSTFIX if ENV_POSTFIX is not None else ''}/bin/activate')
             odoo_bin = os.path.join(ODOO_ROOT_DIR,
                                     f'{ODOO_VERSION_PREFIX}{version}{ODOO_VERSION_POSTFIX if ENV_POSTFIX is not None else ''}/odoo-bin {shell}')
             project_dir = os.path.join(PROJECT_ROOT, name)

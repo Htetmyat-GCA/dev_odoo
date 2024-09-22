@@ -10,7 +10,7 @@ VIRTUAL = os.path.join(os.environ.get('HOME'), 'pyenv')  # change your python en
 
 # '{prefixword}{version}{postfix}'
 
-ENV_PREFIX = 'odoo',  # if ENV_PREFIX is not None: pre_version -> {pre}{version} env17, odoo17...
+ENV_PREFIX = 'odoo'  # if ENV_PREFIX is not None: pre_version -> {pre}{version} env17, odoo17...
 
 ENV_POSTFIX = None  # if ENV_POSTFIX is not none: version_postfix -> {version}{post} 17env, 17odoo
 
