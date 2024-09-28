@@ -9,22 +9,26 @@ from settings import *
 
 def available_versions():
     versions = []
-    ava_on_machine = [v for v in os.listdir(ODOO_ROOT_DIR)]
-    for version in ava_on_machine:
-        if ODOO_VERSION_PREFIX is not None and version.startswith(ODOO_VERSION_PREFIX):
-            version = version.replace(ODOO_VERSION_PREFIX, '')
-            if ODOO_VERSION_POSTFIX is not None and version.startswith(ODOO_VERSION_POSTFIX):
-                version = version.replace(ODOO_VERSION_POSTFIX, '')
-            versions.append(int(version))
-    versions.sort()
-    return versions
+    try:
+        ava_on_machine = [v for v in os.listdir(ODOO_ROOT_DIR)]
+        for version in ava_on_machine:
+            if ODOO_VERSION_PREFIX is not None and version.startswith(ODOO_VERSION_PREFIX):
+                version = version.replace(ODOO_VERSION_PREFIX, '')
+                if ODOO_VERSION_POSTFIX is not None and version.startswith(ODOO_VERSION_POSTFIX):
+                    version = version.replace(ODOO_VERSION_POSTFIX, '')
+                versions.append(int(version))
+        versions.sort()
+        return versions
+    except FileNotFoundError:
+        print(f"No such file or directory: {ODOO_ROOT_DIR}")
+        sys.exit(1)
 
 def check_envpath():
     ...
 
 def find_conf_file(path, version):
     match = []
-    regex = re.compile(f'^(.+){version}\.conf$')
+    regex = re.compile(r'^(.+)' + str(version) + r'\.conf$')
     for root, dirs, files in os.walk(path):
         for file in files:
             if regex.match(file):
@@ -43,8 +47,8 @@ def main():
                         help='Odoo Version (default == 17)')
     parser.add_argument('-p', type=str, choices=[i for i in os.listdir(PROJECT_ROOT) if '.' not in i],
                         required=True, help='Project Directories')
-    parser.add_argument('-u', type=str, required=False, help='To Upgrade Module')
-    parser.add_argument('-d', type=str, required=False, help='Select the Database')
+    parser.add_argument('-u', type=str, required=False, help='To Upgrade Module', metavar='MODULE')
+    parser.add_argument('-d', type=str, required=False, help='Select the Database', metavar='DATABASE')
     parser.add_argument('-s', action='store_true', required=False, help='Odoo Shell')
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
