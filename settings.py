@@ -1,8 +1,8 @@
 import os
 
-USER = os.environ.get('USER'),
+USER = os.environ.get('USER')
 
-HOME = os.environ.get('HOME'),
+HOME = os.environ.get('HOME')
 
 PROJECT_ROOT = os.path.join(os.environ.get('HOME'), 'Projects/Odoo/')  # set your project root directory
 

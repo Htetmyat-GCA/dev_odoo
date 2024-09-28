@@ -3,7 +3,7 @@
 import argparse
 import subprocess
 import sys
-# import argcomplete
+import argcomplete
 import re
 from settings import *
 
@@ -39,14 +39,14 @@ def is_root(path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--version', type=int, choices=available_versions(), default=17,
+    parser.add_argument('-v', type=int, choices=available_versions(), default=17,
                         help='Odoo Version (default == 17)')
-    parser.add_argument('-p', '--project', type=str, choices=[i for i in os.listdir(PROJECT_ROOT) if '.' not in i],
-                        required=True, help='Odoo Project Directory Name')
-    parser.add_argument('-u', '--upgrade', type=str, required=False, help='To Upgrade Module')
-    parser.add_argument('-d', '--database', type=str, required=False, help='Select the Database')
-    parser.add_argument('-s', '--shell', action='store_true', required=False, help='Odoo Shell')
-    # argcomplete.autocomplete(parser)
+    parser.add_argument('-p', type=str, choices=[i for i in os.listdir(PROJECT_ROOT) if '.' not in i],
+                        required=True, help='Project Directories')
+    parser.add_argument('-u', type=str, required=False, help='To Upgrade Module')
+    parser.add_argument('-d', type=str, required=False, help='Select the Database')
+    parser.add_argument('-s', action='store_true', required=False, help='Odoo Shell')
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     version = args.version
     name = args.project
