@@ -10,7 +10,7 @@ It's include ___autocomplete Tab feature___ for the project name and odoo versio
 If __WSL__, the feature will work.
 
 ## DEFAULT ODOO Project Structure
-The developer can use his/her project structure changing the settings.py
+The developer can customize his/her project structure by changing the settings.py
 ```
 ODOO DEFAUT ROOT            :   /home/username/.odoo/
 DEFAULT Projects DIR        :   /home/username/Projects/Odoo/{project_name}
