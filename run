@@ -52,11 +52,11 @@ def main():
     parser.add_argument('-s', action='store_true', required=False, help='Odoo Shell')
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    version = args.version
-    name = args.project
-    upgrade = args.upgrade
-    db = args.database
-    shell = 'shell' if args.shell else ''
+    version = args.v
+    name = args.p
+    upgrade = args.u
+    db = args.d
+    shell = 'shell' if args.s else ''
     venv = odoo_bin = config_file = None
     if version and name:
         if all(map(is_root, [ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL])):

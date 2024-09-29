@@ -33,13 +33,23 @@ options:
 
 
 ```
+# Installation
+## Install argcomplete
+First we need to install argcomplete on the system. 
+```bash
+$ sudo apt update && sudo apt upgrade
+$ sudo apt install python-argcomplete
+```
+## Setup argcomplete
 ***
-
+```bash
+$ dev_odoo/setup.sh
+```
+## Run Server
 ### Bash Shell (Linux / MacOS)
 ```bash
-    $ dev_odoo/setup.sh
-    $ dev_odoo/run -p project_name -u upgrade_module # to run default odoo version
-    $ dev_odoo/run -v version -p project_name -d database -u upgrade_module -s # odoo shell
+    $ dev_odoo/run -p project_[tab] -u upgrade_module # to run default odoo version
+    $ dev_odoo/run -v ver[tab] -p project_name -d database -u upgrade_module -s # odoo shell
 ```
 ***
 ### Python and Windows users
