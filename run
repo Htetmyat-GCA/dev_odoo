@@ -5,20 +5,15 @@ import subprocess
 import sys
 import argcomplete
 import re
+import os
 from settings import *
 
 def available_versions():
-    versions = []
     try:
-        ava_on_machine = [v for v in os.listdir(ODOO_ROOT_DIR)]
-        for version in ava_on_machine:
-            if ODOO_VERSION_PREFIX is not None and version.startswith(ODOO_VERSION_PREFIX):
-                version = version.replace(ODOO_VERSION_PREFIX, '')
-                if ODOO_VERSION_POSTFIX is not None and version.startswith(ODOO_VERSION_POSTFIX):
-                    version = version.replace(ODOO_VERSION_POSTFIX, '')
-                versions.append(int(version))
-        versions.sort()
-        return versions
+        versions = [int(v.replace(ODOO_VERSION_PREFIX, '').replace(ODOO_VERSION_POSTFIX, ''))
+                    for v in os.listdir(ODOO_ROOT_DIR)
+                    if v.startswith(ODOO_VERSION_PREFIX)]
+        return sorted(versions)
     except FileNotFoundError:
         print(f"No such file or directory: {ODOO_ROOT_DIR}")
         sys.exit(1)
@@ -27,15 +22,12 @@ def check_envpath():
     ...
 
 def find_conf_file(path, version):
-    match = []
-    regex = re.compile(r'^(.+)' + str(version) + r'\.conf$')
-    for root, dirs, files in os.walk(path):
+    regex = re.compile(rf'^(.+){version}\.conf$')
+    for root, _, files in os.walk(path):
         for file in files:
             if regex.match(file):
-                match.append(os.path.join(root, file))
-                return match
-    else:
-        raise ValueError(f'Odoo {version} conf file was not found in {path}')
+                return [os.path.join(root, file)]
+    raise ValueError(f'Odoo {version} conf file was not found in {path}')
 
 # Check the directory is present and can be accessed by current user.
 def is_root(path):
@@ -43,57 +35,41 @@ def is_root(path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', type=int, choices=available_versions(), default=17,
-                        help='Odoo Version (default == 17)')
-    parser.add_argument('-p', type=str, choices=[i for i in os.listdir(PROJECT_ROOT) if '.' not in i],
-                        required=True, help='Project Directories')
-    parser.add_argument('-u', type=str, required=False, help='To Upgrade Module', metavar='MODULE')
-    parser.add_argument('-d', type=str, required=False, help='Select the Database', metavar='DATABASE')
-    parser.add_argument('-s', action='store_true', required=False, help='Odoo Shell')
+    parser.add_argument('-v', type=int, choices=available_versions(), default=17, help='Odoo Version (default == 17)')
+    parser.add_argument('-p', type=str, choices=[i for i in os.listdir(PROJECT_ROOT) if '.' not in i], required=True, help='Project Directories')
+    parser.add_argument('-u', type=str, help='To Upgrade Module', metavar='MODULE')
+    parser.add_argument('-d', type=str, help='Select the Database', metavar='DATABASE')
+    parser.add_argument('-s', action='store_true', help='Odoo Shell')
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    version = args.v
-    name = args.p
-    upgrade = args.u
-    db = args.d
-    shell = 'shell' if args.s else ''
-    venv = odoo_bin = config_file = None
-    if version and name:
-        if all(map(is_root, [ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL])):
-            venv = os.path.join(VIRTUAL,
-                                f'{ENV_PREFIX if ENV_PREFIX is not None else ''}{version}{ENV_POSTFIX if ENV_POSTFIX is not None else ''}/bin/activate')
-            odoo_bin = os.path.join(ODOO_ROOT_DIR,
-                                    f'{ODOO_VERSION_PREFIX}{version}{ODOO_VERSION_POSTFIX if ENV_POSTFIX is not None else ''}/odoo-bin {shell}')
-            project_dir = os.path.join(PROJECT_ROOT, name)
-            config_file = f"{find_conf_file(project_dir, version)[0]}"
-        else:
-            p = ['ODOO_ROOT_DIR', 'PROJECT_ROOT', 'VIRTUAL']
-            for i, root in enumerate([ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL]):
-                if not is_root(root):
-                    print(f'"{root[0]}"  directory was not found in the your system path or cannot access the directory.')
-                    print(f'Please re-config your {p[i]} at settings.py!')
-    else:
-        print(f"Unsupported version: {version} or Project: {name} are not found")
+
+    if not all(map(is_root, [ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL])):
+        for root, name in zip([ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL], ['ODOO_ROOT_DIR', 'PROJECT_ROOT', 'VIRTUAL']):
+            if not is_root(root):
+                print(f'"{root}" directory was not found or cannot be accessed. Please re-configure {name} in settings.py!')
         sys.exit(1)
 
-    if venv and odoo_bin and config_file:
-        cmd = f"source {venv} && {odoo_bin} -c {config_file}"
-        if upgrade:
-            cmd += f" -u {upgrade}"
-        if db:
-            cmd += f" -d {db}"
-        if shell and not db:
-            raise ValueError("Database must be selected")
-        try:
-            subprocess.run(cmd, shell=True, check=True, executable=SHELL)
-        except subprocess.CalledProcessError as e:
-            print(f"Command failed: with exit status {e.returncode}: {e.cmd}")
-            exit(e.returncode)
-        except KeyboardInterrupt:
-            print(f"Keyboard interrupt received, exiting...")
-            exit(0)
-    else:
-        exit(1)
+    version, name = args.v, args.p
+    venv = os.path.join(VIRTUAL, f'{ENV_PREFIX or ""}{version}{ENV_POSTFIX or ""}/bin/activate')
+    odoo_bin = os.path.join(ODOO_ROOT_DIR, f'{ODOO_VERSION_PREFIX}{version}{ODOO_VERSION_POSTFIX or ""}/odoo-bin {"shell" if args.s else ""}')
+    config_file = find_conf_file(os.path.join(PROJECT_ROOT, name), version)[0]
+
+    cmd = f"source {venv} && {odoo_bin} -c {config_file}"
+    if args.u:
+        cmd += f" -u {args.u}"
+    if args.d:
+        cmd += f" -d {args.d}"
+    if args.s and not args.d:
+        raise ValueError("Database must be selected")
+
+    try:
+        subprocess.run(cmd, shell=True, check=True, executable=SHELL)
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed: with exit status {e.returncode}: {e.cmd}")
+        sys.exit(e.returncode)
+    except KeyboardInterrupt:
+        print("Keyboard interrupt received, exiting...")
+        sys.exit(0)
 
 if __name__ == '__main__':
     main()
