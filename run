@@ -7,93 +7,146 @@ import argcomplete
 import re
 from settings import *
 
-def available_versions():
-    versions = []
-    try:
-        ava_on_machine = [v for v in os.listdir(ODOO_ROOT_DIR)]
-        for version in ava_on_machine:
-            if ODOO_VERSION_PREFIX is not None and version.startswith(ODOO_VERSION_PREFIX):
-                version = version.replace(ODOO_VERSION_PREFIX, '')
-                if ODOO_VERSION_POSTFIX is not None and version.startswith(ODOO_VERSION_POSTFIX):
-                    version = version.replace(ODOO_VERSION_POSTFIX, '')
-                versions.append(int(version))
-        versions.sort()
-        return versions
-    except FileNotFoundError:
-        print(f"No such file or directory: {ODOO_ROOT_DIR}")
-        sys.exit(1)
+class OdooManager:
+    def __init__(self):
+        self.ODOO_ROOT_DIR = ODOO_ROOT_DIR
+        self.PROJECT_ROOT = PROJECT_ROOT
+        self.VIRTUAL = VIRTUAL
+        self.ENV_PREFIX = ENV_PREFIX
+        self.ENV_POSTFIX = ENV_POSTFIX
+        self.ODOO_VERSION_PREFIX = ODOO_VERSION_PREFIX
+        self.ODOO_VERSION_POSTFIX = ODOO_VERSION_POSTFIX
+        self.SHELL = SHELL
 
-def check_envpath():
-    ...
-
-def find_conf_file(path, version):
-    match = []
-    regex = re.compile(r'^(.+)' + str(version) + r'\.conf$')
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            if regex.match(file):
-                match.append(os.path.join(root, file))
-                return match
-    else:
-        raise ValueError(f'Odoo {version} conf file was not found in {path}')
-
-# Check the directory is present and can be accessed by current user.
-def is_root(path):
-    return os.path.isdir(path) and os.access(path, os.R_OK)
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-v', type=int, choices=available_versions(), default=17,
-                        help='Odoo Version (default == 17)')
-    parser.add_argument('-p', type=str, choices=[i for i in os.listdir(PROJECT_ROOT) if '.' not in i],
-                        required=True, help='Project Directories')
-    parser.add_argument('-u', type=str, required=False, help='To Upgrade Module', metavar='MODULE')
-    parser.add_argument('-d', type=str, required=False, help='Select the Database', metavar='DATABASE')
-    parser.add_argument('-s', action='store_true', required=False, help='Odoo Shell')
-    argcomplete.autocomplete(parser)
-    args = parser.parse_args()
-    version = args.v
-    name = args.p
-    upgrade = args.u
-    db = args.d
-    shell = 'shell' if args.s else ''
-    venv = odoo_bin = config_file = None
-    if version and name:
-        if all(map(is_root, [ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL])):
-            venv = os.path.join(VIRTUAL,
-                                f'{ENV_PREFIX if ENV_PREFIX is not None else ''}{version}{ENV_POSTFIX if ENV_POSTFIX is not None else ''}/bin/activate')
-            odoo_bin = os.path.join(ODOO_ROOT_DIR,
-                                    f'{ODOO_VERSION_PREFIX}{version}{ODOO_VERSION_POSTFIX if ENV_POSTFIX is not None else ''}/odoo-bin {shell}')
-            project_dir = os.path.join(PROJECT_ROOT, name)
-            config_file = f"{find_conf_file(project_dir, version)[0]}"
-        else:
-            p = ['ODOO_ROOT_DIR', 'PROJECT_ROOT', 'VIRTUAL']
-            for i, root in enumerate([ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL]):
-                if not is_root(root):
-                    print(f'"{root[0]}"  directory was not found in the your system path or cannot access the directory.')
-                    print(f'Please re-config your {p[i]} at settings.py!')
-    else:
-        print(f"Unsupported version: {version} or Project: {name} are not found")
-        sys.exit(1)
-
-    if venv and odoo_bin and config_file:
-        cmd = f"source {venv} && {odoo_bin} -c {config_file}"
-        if upgrade:
-            cmd += f" -u {upgrade}"
-        if db:
-            cmd += f" -d {db}"
-        if shell and not db:
-            raise ValueError("Database must be selected")
+    def available_versions(self):
+        versions = []
         try:
-            subprocess.run(cmd, shell=True, check=True, executable=SHELL)
-        except subprocess.CalledProcessError as e:
-            print(f"Command failed: with exit status {e.returncode}: {e.cmd}")
-            exit(e.returncode)
-        except KeyboardInterrupt:
-            print(f"Keyboard interrupt received, exiting...")
-            exit(0)
-    else:
-        exit(1)
+            ava_on_machine = [v for v in os.listdir(self.ODOO_ROOT_DIR)]
+            for version in ava_on_machine:
+                if self.ODOO_VERSION_PREFIX is not None and version.startswith(self.ODOO_VERSION_PREFIX):
+                    version = version.replace(self.ODOO_VERSION_PREFIX, '')
+                    if self.ODOO_VERSION_POSTFIX is not None and version.startswith(self.ODOO_VERSION_POSTFIX):
+                        version = version.replace(self.ODOO_VERSION_POSTFIX, '')
+                    versions.append(int(version))
+            versions.sort()
+            return versions
+        except FileNotFoundError:
+            print(f"No such file or directory: {self.ODOO_ROOT_DIR}")
+            sys.exit(1)
+
+    def available_dbs(self, version) -> list:
+        try:
+            user = f"odoo{version}"
+            dbs = subprocess.run('psql -l | grep "|"', shell=True, executable=self.SHELL, stdout=subprocess.PIPE)
+            db_table = str(dbs.stdout.decode()).split("\n")
+            db_list = [db_info.split("|")[0].strip() for db_info in db_table[1:len(db_table)-5] if user in db_info]
+            print(db_list)
+            return db_list
+        except subprocess.CalledProcessError:
+            print("PostgreSQL is not installed in your system")
+
+    def ava_modules_at_project(self, project, version) -> list:
+        try:
+            pj = os.path.join(self.PROJECT_ROOT, project)
+            config = self.find_conf_file(pj, version)
+            with open(config[0], 'r') as f:
+                lines = f.readlines()
+                modules = []
+                for line in lines:
+                    if 'addons_path' in line:
+                        modules = line.split('=')[1].split(',')
+                    elif line.startswith(' ' or line.startswith('\t')):
+                        modules += line.split(',')
+                modules = [m.strip() for m in modules if m != '\n']
+                mod_vals_list = []
+                for md in modules:
+                    mod_vals_list.extend(os.listdir(md))
+                mod_vals_list = [mod for mod in mod_vals_list if '.' not in mod]
+            return sorted(mod_vals_list)
+
+        except:
+            raise
+
+    def find_conf_file(self, path, version):
+        match = []
+        regex = re.compile(r'^(.+)' + str(version) + r'\.conf$')
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if regex.match(file):
+                    match.append(os.path.join(root, file))
+                    return match
+        else:
+            raise ValueError(f'Odoo {version} conf file was not found in {path}')
+
+    def is_root(self, path):
+        return os.path.isdir(path) and os.access(path, os.R_OK)
+
+    def module_completer(self, prefix, parsed_args, **kwargs):
+        project = parsed_args.p
+        version = parsed_args.v
+        return self.ava_modules_at_project(project, version)
+
+    def db_completer(self, prefix, parsed_args, **kwargs):
+        version = parsed_args.v
+        return self.available_dbs(version)
+
+    def main(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-v', type=int, choices=self.available_versions(), default=17,
+                            help='Odoo Version (default == 17)')
+        parser.add_argument('-p', type=str, choices=[i for i in os.listdir(PROJECT_ROOT) if '.' not in i],
+                            required=True, help='Project Directories')
+        parser.add_argument('-d', type=str, required=False, help='Select the Database',
+                            metavar='DATABASE').completer = self.db_completer
+        parser.add_argument('-u', type=str, required=False, help='To Upgrade Module',
+                            metavar='MODULE').completer = self.module_completer
+        parser.add_argument('-s', action='store_true', required=False, help='Odoo Shell')
+        argcomplete.autocomplete(parser)
+        args = parser.parse_args()
+        version = args.v
+        name = args.p
+        upgrade = args.u
+        db = args.d
+        shell = 'shell' if args.s else ''
+        venv = odoo_bin = config_file = None
+        if version and name:
+            if all(map(self.is_root, [ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL])):
+                venv = os.path.join(VIRTUAL,
+                                    f'{ENV_PREFIX if ENV_PREFIX is not None else ''}{version}{ENV_POSTFIX if ENV_POSTFIX is not None else ''}/bin/activate')
+                odoo_bin = os.path.join(ODOO_ROOT_DIR,
+                                        f'{ODOO_VERSION_PREFIX}{version}{ODOO_VERSION_POSTFIX if ENV_POSTFIX is not None else ''}/odoo-bin {shell}')
+                project_dir = os.path.join(PROJECT_ROOT, name)
+                config_file = f"{self.find_conf_file(project_dir, version)[0]}"
+            else:
+                p = ['ODOO_ROOT_DIR', 'PROJECT_ROOT', 'VIRTUAL']
+                for i, root in enumerate([ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL]):
+                    if not self.is_root(root):
+                        print(
+                            f'"{root[0]}"  directory was not found in the your system path or cannot access the directory.')
+                        print(f'Please re-config your {p[i]} at settings.py!')
+        else:
+            print(f"Unsupported version: {version} or Project: {name} are not found")
+            sys.exit(1)
+
+        if venv and odoo_bin and config_file:
+            cmd = f"source {venv} && {odoo_bin} -c {config_file}"
+            if upgrade:
+                cmd += f" -u {upgrade}"
+            if db:
+                cmd += f" -d {db}"
+            if shell and not db:
+                raise ValueError("Database must be selected")
+            try:
+                subprocess.run(cmd, shell=True, check=True, executable=SHELL)
+            except subprocess.CalledProcessError as e:
+                print(f"Command failed: with exit status {e.returncode}: {e.cmd}")
+                exit(e.returncode)
+            except KeyboardInterrupt:
+                print(f"Keyboard interrupt received, exiting...")
+                exit(0)
+        else:
+            exit(1)
 
 if __name__ == '__main__':
-    main()
+    odoo_dev = OdooManager()
+    odoo_dev.main()
