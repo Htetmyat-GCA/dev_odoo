@@ -23,7 +23,7 @@ $ chmod +x setup.sh
 $ ./setup.sh
 ```
 ## Configuration
-Update the `settings.py` file with your Odoo specific paths and environment settings:
+Update the [`settings.py `](settings.py) file with your Odoo specific paths and environment settings:
 ```python
 # settings.py
 import pathlib
