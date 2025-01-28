@@ -17,7 +17,7 @@ ___
 ## Installation
 ```bash
 $ git clone https://github.com/Htetmyat-GCA/dev_odoo.git
-$ sudo apt install python-argcomplete
+$ sudo apt install python3-argcomplete
 $ cd dev_odoo
 $ chmod +x setup.sh
 $ ./setup.sh

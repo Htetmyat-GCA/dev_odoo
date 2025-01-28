@@ -23,10 +23,15 @@ class OdooManager:
         try:
             ava_on_machine = [v for v in os.listdir(self.ODOO_ROOT_DIR)]
             for version in ava_on_machine:
-                if self.ODOO_VERSION_PREFIX is not None and version.startswith(self.ODOO_VERSION_PREFIX):
+                if self.ODOO_VERSION_PREFIX != '' and version.startswith(self.ODOO_VERSION_PREFIX):
                     version = version.replace(self.ODOO_VERSION_PREFIX, '')
-                    if self.ODOO_VERSION_POSTFIX is not None and version.startswith(self.ODOO_VERSION_POSTFIX):
+                    if self.ODOO_VERSION_POSTFIX != '' and version.endswith(self.ODOO_VERSION_POSTFIX):
                         version = version.replace(self.ODOO_VERSION_POSTFIX, '')
+                    versions.append(int(version))
+                elif self.ODOO_VERSION_POSTFIX != '' and version.endswith(self.ODOO_VERSION_POSTFIX):
+                    version = version.replace(self.ODOO_VERSION_POSTFIX, '')
+                    if self.ODOO_VERSION_PREFIX != '' and version.startswith(self.ODOO_VERSION_PREFIX):
+                        version = version.replace(self.ODOO_VERSION_PREFIX, '')
                     versions.append(int(version))
             versions.sort()
             return versions
@@ -111,10 +116,8 @@ class OdooManager:
         venv = odoo_bin = config_file = None
         if version and name:
             if all(map(self.is_root, [ODOO_ROOT_DIR, PROJECT_ROOT, VIRTUAL])):
-                venv = os.path.join(VIRTUAL,
-                                    f'{ENV_PREFIX if ENV_PREFIX is not None else ''}{version}{ENV_POSTFIX if ENV_POSTFIX is not None else ''}/bin/activate')
-                odoo_bin = os.path.join(ODOO_ROOT_DIR,
-                                        f'{ODOO_VERSION_PREFIX}{version}{ODOO_VERSION_POSTFIX if ENV_POSTFIX is not None else ''}/odoo-bin {shell}')
+                venv = os.path.join(VIRTUAL, (ENV_PREFIX or '')+(str(version)+ENV_POSTFIX or '')+ '/bin/activate' )
+                odoo_bin = os.path.join(ODOO_ROOT_DIR, (ODOO_VERSION_PREFIX or '')+ str(version) + (ODOO_VERSION_POSTFIX or '') + '/odoo-bin'+ f' {shell}')
                 project_dir = os.path.join(PROJECT_ROOT, name)
                 config_file = f"{self.find_conf_file(project_dir, version)[0]}"
             else:
